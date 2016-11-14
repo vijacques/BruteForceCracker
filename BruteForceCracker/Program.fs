@@ -1,5 +1,6 @@
 ﻿open System
 open System.Diagnostics
+open System.IO
 open System.Threading
 
 [<EntryPoint>]
@@ -9,7 +10,7 @@ let main argv =
 
     // Basic Information
     let program = "C:\Program Files\7-Zip\7z.exe"
-    let password = "Hf3"
+    let password = "zz"
     let minLength = 2
     let maxLength = 4
     
@@ -29,7 +30,10 @@ let main argv =
     printSeqInfo upperABCSeq
     printSeqInfo specialSeq
 
-    let allSeqs = numSeq |> Seq.append upperABCSeq |> Seq.append lowerABCSeq
+    let allSeqs =
+        numSeq
+        //|> Seq.append upperABCSeq
+        |> Seq.append lowerABCSeq
 
     // Custom Sequences
     let mutable minLengthSeq = allSeqs
@@ -37,16 +41,14 @@ let main argv =
     for i in 1..(minLength-1) do
         minLengthSeq <-
             minLengthSeq
-            |> Seq.map (fun x -> allSeqs |> Seq.map (fun y -> x + y))
-            |> Seq.concat
+            |> Seq.collect (fun x -> allSeqs |> Seq.map (fun y -> x + y))
 
     let mutable finalSeq = minLengthSeq
 
     for i in minLength..(maxLength-1) do
         finalSeq <-
             finalSeq
-            |> Seq.map (fun x -> allSeqs |> Seq.map (fun y -> x + y))
-            |> Seq.concat
+            |> Seq.collect (fun x -> allSeqs |> Seq.map (fun y -> x + y))
             |> Seq.append finalSeq
     
     printfn "\n{ %s ... %s } - Total combinations: %i" (Seq.head finalSeq) (Seq.last finalSeq) (Seq.length finalSeq)
@@ -55,6 +57,7 @@ let main argv =
     let cpuWorkSeq = Seq.chunkBySize cpuWorkLength finalSeq
 
     printfn "\nProcessor count: %i - Workload per CPU: %i" Environment.ProcessorCount cpuWorkLength
+
 
     // Adds password to file
     let p1 = new Process()
@@ -67,40 +70,37 @@ let main argv =
     printfn "%i %s" p1.ExitCode (p1.StandardOutput.ReadToEnd())
 
     // Cracks password
-    let cancToken = new CancellationTokenSource()
+    let mutable cancel = false
+
+    let mutable counter = 0
 
     let bruteCrackAsync s a = async {
-        Seq.iter (fun n ->
-            let p2 = new Process()
-            p2.StartInfo.FileName <- program
-    
-            p2.StartInfo.Arguments <- "x -p" + n + " -y secure.7z"
-//            p2.StartInfo.RedirectStandardOutput <- true
-            p2.StartInfo.UseShellExecute <- false
+        let p2 = new Process()
+        p2.StartInfo.FileName <- program
+        p2.StartInfo.RedirectStandardOutput <- true
+        p2.StartInfo.RedirectStandardError <- true
+        p2.StartInfo.UseShellExecute <- false
+
+        Seq.tryFind (fun n ->
+            counter <- counter + 1
+            p2.StartInfo.Arguments <- "x -p" + n + " -y -oOutput secure.7z"
             p2.Start() |> ignore
             p2.WaitForExit()
            
             if p2.ExitCode = 0 then
-                printfn "%i %s %s" p2.ExitCode (p2.StandardOutput.ReadToEnd()) a
+                printfn "%s %s" (p2.StandardOutput.ReadToEnd()) a
                 timer.Stop()
-                cancToken.Cancel()) s
-//            else
-//                printfn "wrong password: %s" n) s
-
-//            let f = Seq.tryFind (fun n -> n = "Hf3") s
-//        match f with
-//        | Some s ->
-//            printfn "found Hf3!!! - %s" a
-//            timer.Stop()
-//            cancToken.Cancel()
-//        | None -> ()
+                printfn "Total execution time: %f\nNumber of tries: %i" timer.Elapsed.TotalSeconds counter
+                cancel <- true
+                true
+            else
+                cancel) s |> ignore
     }
 
-    Async.Start (bruteCrackAsync (cpuWorkSeq |> Seq.head) "seq1", cancToken.Token)
-    Async.Start (bruteCrackAsync (cpuWorkSeq |> Seq.skip 1 |> Seq.head) "seq2", cancToken.Token)
-    Async.Start (bruteCrackAsync (cpuWorkSeq |> Seq.skip 2 |> Seq.head) "seq3", cancToken.Token)
-    Async.Start (bruteCrackAsync (cpuWorkSeq |> Seq.skip 3 |> Seq.head) "seq4", cancToken.Token)
+    printfn "Starting brute force cracking..."
 
-    printfn "Total execution time: %f" timer.Elapsed.TotalSeconds
+    for i in 0..(Seq.length cpuWorkSeq - 1) do
+        Async.Start (bruteCrackAsync (cpuWorkSeq |> Seq.skip i |> Seq.head) ("seq" + string i))
+    
     System.Console.Read() |> ignore
     0
