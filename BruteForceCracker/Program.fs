@@ -36,7 +36,7 @@ let main argv =
     // Adds password to file
     let p1 = new Process()
     p1.StartInfo.FileName <- program
-    p1.StartInfo.Arguments <- "a -p" + "france" + " -y secure.7z BruteForceCracker.exe.config"
+    p1.StartInfo.Arguments <- "a -p" + "abc" + " -y " + file + " BruteForceCracker.exe.config"
     p1.StartInfo.RedirectStandardOutput <- true
     p1.StartInfo.UseShellExecute <- false
     p1.Start() |> ignore
@@ -76,7 +76,7 @@ let main argv =
 
             Seq.tryFind (fun n ->
                 counter <- counter + 1
-                p2.StartInfo.Arguments <- "x -p" + n + " -y -oOutput secure.7z"
+                p2.StartInfo.Arguments <- "x -p" + n + " -y -oOutput " + file
                 p2.Start() |> ignore
                 p2.WaitForExit()
            
@@ -101,18 +101,18 @@ let main argv =
         // Sequences
         let numSeq = { 0..9 } |> Seq.map string
         let lowerABCSeq = { 'a'..'z' } |> Seq.map string
-        let upperABCSeq = { 'A'..'Z' } |> Seq.map string
+//        let upperABCSeq = { 'A'..'Z' } |> Seq.map string
         let specialSeq = " !\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~".ToCharArray() |> Seq.map string
 
 //        printSeqInfo numSeq
         printSeqInfo lowerABCSeq
-        printSeqInfo upperABCSeq
+//        printSeqInfo upperABCSeq
 //        printSeqInfo specialSeq
 
         let allSeqs =
 //            numSeq
-            upperABCSeq
-            |> Seq.append lowerABCSeq
+//            upperABCSeq
+            lowerABCSeq
 //            |> Seq.append specialSeq
 
         // Custom Sequences
@@ -152,7 +152,7 @@ let main argv =
 
             Seq.tryFind (fun n ->
                 counter <- counter + 1
-                p2.StartInfo.Arguments <- "x -p" + n + " -y -oOutput secure.7z"
+                p2.StartInfo.Arguments <- "x -p" + n + " -y -oOutput " + file
                 p2.Start() |> ignore
                 p2.WaitForExit()
            
