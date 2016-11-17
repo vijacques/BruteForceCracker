@@ -36,7 +36,7 @@ let main argv =
     // Adds password to file
     let p1 = new Process()
     p1.StartInfo.FileName <- program
-    p1.StartInfo.Arguments <- "a -p" + "abc" + " -y " + file + " BruteForceCracker.exe.config"
+    p1.StartInfo.Arguments <- "a -p" + "zzz" + " -y " + file + " BruteForceCracker.exe.config"
     p1.StartInfo.RedirectStandardOutput <- true
     p1.StartInfo.UseShellExecute <- false
     p1.Start() |> ignore
@@ -49,8 +49,7 @@ let main argv =
 
     if not cracked && attackType = "d" then
         printfn "Starting dictionary cracker..."
-        timer.Restart()
-
+        
         // Sequences
         let dictLocation = ConfigurationManager.AppSettings.Get "DictionaryLocation"
         let dictSeq = File.ReadAllLines dictLocation |> Seq.ofArray
@@ -91,12 +90,13 @@ let main argv =
                     cancel) s |> ignore
         }
 
+        timer.Restart()
+
         for i in 0..(Seq.length cpuWorkSeq - 1) do
             Async.Start (bruteCrackAsync (cpuWorkSeq |> Seq.skip i |> Seq.head) ("seq" + string i))
     
     if not cracked && attackType = "b" then
         printfn "Starting brute force cracker..."
-        timer.Restart()
 
         // Sequences
         let numSeq = { 0..9 } |> Seq.map string
@@ -166,6 +166,8 @@ let main argv =
                 else
                     cancel) s |> ignore
         }
+
+        timer.Restart()
 
         for i in 0..(Seq.length cpuWorkSeq - 1) do
             Async.Start (bruteCrackAsync (cpuWorkSeq |> Seq.skip i |> Seq.head) ("seq" + string i))

@@ -52,7 +52,7 @@
     <DocumentationFile>bin\Debug\BruteForceCracker.XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
     <PlatformTarget>x64</PlatformTarget>
-    <StartArguments>secure.zip 1 3 b</StartArguments>
+    <StartArguments>secure.7z 1 3 b</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <DebugType>pdbonly</DebugType>
