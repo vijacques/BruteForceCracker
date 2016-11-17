@@ -83,7 +83,7 @@ let main argv =
                 if p2.ExitCode = 0 then
                     printfn "%s %s" (p2.StandardOutput.ReadToEnd()) a
                     timer.Stop()
-                    printfn "Total execution time: %f\nNumber of tries: %i" timer.Elapsed.TotalSeconds counter
+                    printfn "\nTotal execution time: %f\nNumber of tries: %i\nFINISHED." timer.Elapsed.TotalSeconds counter
                     cancel <- true
                     cracked <- true
                     true
@@ -159,7 +159,7 @@ let main argv =
                 if p2.ExitCode = 0 then
                     printfn "%s %s" (p2.StandardOutput.ReadToEnd()) a
                     timer.Stop()
-                    printfn "Total execution time: %f\nNumber of tries: %i" timer.Elapsed.TotalSeconds counter
+                    printfn "\nTotal execution time: %f\nNumber of tries: %i\nFINISHED." timer.Elapsed.TotalSeconds counter
                     cancel <- true
                     cracked <- true
                     true
